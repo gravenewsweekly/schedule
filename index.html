@@ -20,22 +20,42 @@
     </nav>
 
     <h2 id="welcomeMessage"></h2>
-    
+
     <section>
-        <h3>About This Website</h3>
+        <h1>Welcome to ScheduleCreate.com</h1>
         <p>
-            Welcome to our **Simple Scheduling App**! This platform allows users to **sign up, create a personal schedule, and manage their tasks efficiently**.  
-            You can add subjects with time slots and view them in a structured table.  
+            **ScheduleCreate.com** is your **personalized scheduling tool** designed to help you **organize your daily tasks, subjects, and time slots with ease**.
         </p>
         <p>
-            Our goal is to provide a **simple, user-friendly scheduling tool** that helps users **stay organized** without complex features.
+            Whether you're a **student, professional, or someone managing a busy lifestyle**, our platform provides a **simple and effective way** to keep track of your schedule.
+        </p>
+
+        <h3>How It Works</h3>
+        <ul>
+            <li>📌 **Sign up for a free account** to start using the platform.</li>
+            <li>📝 **Create and manage schedules** by adding subjects and time slots.</li>
+            <li>📅 **View your schedule in a structured table** for easy access.</li>
+            <li>🔒 **Your data remains secure** with encrypted storage.</li>
+        </ul>
+
+        <h3>Start Creating Your Schedule!</h3>
+        <p>
+            To access the **Create Schedule** feature, you must **sign up or log in**. If you don’t have an account yet, click below to get started:
+        </p>
+        <p>
+            <a href="signup.html" class="btn">Create Account</a>  
+            <a href="login.html" class="btn">Login</a>
         </p>
     </section>
+
+    <footer>
+        <p>&copy; 2025 ScheduleCreate.com. All Rights Reserved.</p>
+    </footer>
 
     <script>
         const user = JSON.parse(localStorage.getItem("user"));
         if (!user) {
-            window.location.href = "login.html";
+            document.getElementById("welcomeMessage").innerText = "Hello, Guest! Please sign up or log in to create your schedule.";
         } else {
             document.getElementById("welcomeMessage").innerText = `Welcome, ${user.username}!`;
         }
