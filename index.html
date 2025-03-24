@@ -3,13 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>ScheduleCreate.com | Home</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="schedule.html">Create Schedule</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="disclaimer.html">Disclaimer</a>
+        <a href="donate.html">Donate</a>
+        <button onclick="logout()">Logout</button>
+    </nav>
+
     <h2 id="welcomeMessage"></h2>
-    <a href="schedule.html">Create Schedule</a>
-    <button onclick="logout()">Logout</button>
+    
+    <section>
+        <h3>About This Website</h3>
+        <p>
+            Welcome to our **Simple Scheduling App**! This platform allows users to **sign up, create a personal schedule, and manage their tasks efficiently**.  
+            You can add subjects with time slots and view them in a structured table.  
+        </p>
+        <p>
+            Our goal is to provide a **simple, user-friendly scheduling tool** that helps users **stay organized** without complex features.
+        </p>
+    </section>
 
     <script>
         const user = JSON.parse(localStorage.getItem("user"));
