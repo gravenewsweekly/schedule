@@ -9,14 +9,16 @@
 <body>
     <nav>
         <a href="index.html">Home</a>
-        <a href="schedule.html">Create Schedule</a>
+        <a href="schedule.html" id="scheduleLink">Create Schedule</a>
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
         <a href="terms.html">Terms</a>
         <a href="privacy.html">Privacy</a>
         <a href="disclaimer.html">Disclaimer</a>
         <a href="donate.html">Donate</a>
-        <button onclick="logout()">Logout</button>
+        <button id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
+        <a href="signup.html" id="signupBtn" class="btn">Sign Up</a>
+        <a href="login.html" id="loginBtn" class="btn">Login</a>
     </nav>
 
     <h2 id="welcomeMessage"></h2>
@@ -39,12 +41,8 @@
         </ul>
 
         <h3>Start Creating Your Schedule!</h3>
-        <p>
-            To access the **Create Schedule** feature, you must **sign up or log in**. If you don’t have an account yet, click below to get started:
-        </p>
-        <p>
-            <a href="signup.html" class="btn">Create Account</a>  
-            <a href="login.html" class="btn">Login</a>
+        <p id="loginPrompt" style="display: none; color: red;">
+            🚨 **You must log in to access the scheduling feature!** 🚨  
         </p>
     </section>
 
@@ -54,16 +52,30 @@
 
     <script>
         const user = JSON.parse(localStorage.getItem("user"));
-        if (!user) {
-            document.getElementById("welcomeMessage").innerText = "Hello, Guest! Please sign up or log in to create your schedule.";
-        } else {
+
+        if (user) {
             document.getElementById("welcomeMessage").innerText = `Welcome, ${user.username}!`;
+            document.getElementById("logoutBtn").style.display = "inline";
+            document.getElementById("signupBtn").style.display = "none";
+            document.getElementById("loginBtn").style.display = "none";
+        } else {
+            document.getElementById("welcomeMessage").innerText = "Hello, Guest! Please sign up or log in to create your schedule.";
+            document.getElementById("signupBtn").style.display = "inline";
+            document.getElementById("loginBtn").style.display = "inline";
+            document.getElementById("logoutBtn").style.display = "none";
         }
 
         function logout() {
             localStorage.removeItem("user");
             window.location.href = "login.html";
         }
+
+        document.getElementById("scheduleLink").addEventListener("click", function (event) {
+            if (!user) {
+                event.preventDefault();
+                document.getElementById("loginPrompt").style.display = "block";
+            }
+        });
     </script>
 </body>
 </html>
