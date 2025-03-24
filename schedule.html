@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>Add Schedule</h2>
+    <form id="scheduleForm">
+        <input type="text" id="subject" placeholder="Subject" required>
+        <input type="text" id="time" placeholder="Time" required>
+        <button type="submit">Save</button>
+    </form>
+    <table id="scheduleTable">
+        <tr>
+            <th>Subject</th>
+            <th>Time</th>
+        </tr>
+    </table>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user) {
+            window.location.href = "login.html";
+        }
+
+        document.getElementById("scheduleForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            
+            const subject = document.getElementById("subject").value;
+            const time = document.getElementById("time").value;
+
+            user.schedules.push({ subject, time });
+            localStorage.setItem("user", JSON.stringify(user));
+
+            const apiKey = "$2a$10$ZNo5JVKUh6E5ICm.ezmotO8u4CVZc707uFxrkAamgPPMGDBHhXAWq";
+            const binId = "67e1bb208960c979a577a15f";
+
+            await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Master-Key": apiKey
+                },
+                body: JSON.stringify(user)
+            });
+
+            location.reload();
+        });
+
+        user.schedules.forEach(schedule => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${schedule.subject}</td><td>${schedule.time}</td>`;
+            document.getElementById("scheduleTable").appendChild(row);
+        });
+    </script>
+</body>
+</html>
