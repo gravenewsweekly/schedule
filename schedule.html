@@ -5,14 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body.locked {
+            filter: blur(5px);
+            pointer-events: none;
+            user-select: none;
+        }
+        .message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .message.show {
+            display: block;
+        }
+    </style>
 </head>
 <body>
+    <div class="message" id="authMessage">
+        <p>You need to create an account to access this page.</p>
+        <a href="signup.html" style="color: yellow;">Create Account</a> | 
+        <a href="login.html" style="color: lightblue;">Login</a>
+    </div>
+
     <h2>Add Schedule</h2>
     <form id="scheduleForm">
         <input type="text" id="subject" placeholder="Subject" required>
         <input type="text" id="time" placeholder="Time" required>
         <button type="submit">Save</button>
     </form>
+
     <table id="scheduleTable">
         <tr>
             <th>Subject</th>
@@ -22,8 +51,13 @@
 
     <script>
         const user = JSON.parse(localStorage.getItem("user"));
+        
+        // Check if user is logged in
         if (!user) {
-            window.location.href = "login.html";
+            document.body.classList.add("locked"); 
+            document.getElementById("authMessage").classList.add("show");
+        } else {
+            document.body.classList.remove("locked");
         }
 
         document.getElementById("scheduleForm").addEventListener("submit", async function(event) {
@@ -32,6 +66,10 @@
             const subject = document.getElementById("subject").value;
             const time = document.getElementById("time").value;
 
+            if (!user.schedules) {
+                user.schedules = [];
+            }
+            
             user.schedules.push({ subject, time });
             localStorage.setItem("user", JSON.stringify(user));
 
@@ -50,11 +88,13 @@
             location.reload();
         });
 
-        user.schedules.forEach(schedule => {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${schedule.subject}</td><td>${schedule.time}</td>`;
-            document.getElementById("scheduleTable").appendChild(row);
-        });
+        if (user && user.schedules) {
+            user.schedules.forEach(schedule => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${schedule.subject}</td><td>${schedule.time}</td>`;
+                document.getElementById("scheduleTable").appendChild(row);
+            });
+        }
     </script>
 </body>
 </html>
