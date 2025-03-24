@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donate to Support</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>Support ScheduleCreate.com</h2>
+    <p>Your donations help us keep the platform running smoothly!</p>
+
+    <div id="donationSection">
+        <button id="donateButton" onclick="startPayment()">Donate ₹100</button>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user) {
+            document.getElementById("donationSection").innerHTML = "<p>Please <a href='login.html'>log in</a> to donate.</p>";
+        } else {
+            function startPayment() {
+                var options = {
+                    "key": "YOUR_RAZORPAY_KEY_HERE",
+                    "amount": 10000, // Amount in paisa (₹100)
+                    "currency": "INR",
+                    "name": "ScheduleCreate.com",
+                    "description": "Support Our Platform",
+                    "image": "logo.png", // Change to your logo
+                    "handler": function (response) {
+                        localStorage.setItem("donationStatus", JSON.stringify({ paid: true, username: user.username }));
+                        window.location.href = "donate.html"; // Redirect after successful payment
+                    },
+                    "prefill": {
+                        "name": user.username,
+                        "email": user.email
+                    },
+                    "theme": {
+                        "color": "#3399cc"
+                    }
+                };
+
+                var rzp = new Razorpay(options);
+                rzp.open();
+            }
+
+            // Check donation status
+            const donationData = JSON.parse(localStorage.getItem("donationStatus"));
+            if (donationData && donationData.paid) {
+                document.getElementById("donationSection").innerHTML = `<button disabled>Paid by ${donationData.username}</button>`;
+            }
+        }
+    </script>
+</body>
+</html>
