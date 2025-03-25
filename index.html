@@ -16,71 +16,53 @@
         <a href="privacy.html">Privacy</a>
         <a href="disclaimer.html">Disclaimer</a>
         <a href="donate.html">Donate</a>
-        <div id="userControls">
-            <button id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
-            <button id="deleteAccountBtn" onclick="deleteAccount()" style="display: none;">Delete Account</button>
-            <button id="messageBtn" onclick="openChat()" style="display: none;">Messages</button>
-            <a href="signup.html" id="signupBtn" class="btn">Sign Up</a>
-            <a href="login.html" id="loginBtn" class="btn">Login</a>
-        </div>
-        <div id="searchBar">
-            <input type="text" id="searchInput" placeholder="Search pages or users...">
-            <button onclick="search()">Search</button>
-        </div>
+        <button id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
+        <a href="signup.html" id="signupBtn" class="btn">Sign Up</a>
+        <a href="login.html" id="loginBtn" class="btn">Login</a>
     </nav>
 
     <h2 id="welcomeMessage"></h2>
 
     <section>
-        <h1>Master Your Time with ScheduleCreate.com</h1>
+        <h1>Welcome to ScheduleCreate.com</h1>
         <p>
-            <strong>ScheduleCreate.com</strong> is your <strong>ultimate scheduling companion</strong>, crafted to help you <strong>streamline your tasks, subjects, and time slots effortlessly</strong>.
+            **ScheduleCreate.com** is your **personalized scheduling tool** designed to help you **organize your daily tasks, subjects, and time slots with ease**.
         </p>
         <p>
-            Perfect for <strong>students, professionals, or anyone juggling a packed schedule</strong>, our platform delivers a <strong>smart, user-friendly solution</strong> to stay on top of your day.
+            Whether you're a **student, professional, or someone managing a busy lifestyle**, our platform provides a **simple and effective way** to keep track of your schedule.
         </p>
 
         <h3>How It Works</h3>
         <ul>
-            <li>✨ <strong>Join for free</strong> – Sign up and unlock your scheduling power.</li>
-            <li>📋 <strong>Build custom schedules</strong> – Add subjects, tasks, and time slots in seconds.</li>
-            <li>🗓️ <strong>See it all at a glance</strong> – Your schedule, beautifully organized in a table.</li>
-            <li>🔐 <strong>Top-notch security</strong> – Your data stays safe with encrypted storage.</li>
+            <li>📌 **Sign up for a free account** to start using the platform.</li>
+            <li>📝 **Create and manage schedules** by adding subjects and time slots.</li>
+            <li>📅 **View your schedule in a structured table** for easy access.</li>
+            <li>🔒 **Your data remains secure** with encrypted storage.</li>
         </ul>
 
-        <h3>Kickstart Your Organized Life!</h3>
+        <h3>Start Creating Your Schedule!</h3>
         <p id="loginPrompt" style="display: none; color: red;">
-            ⚠️ <strong>Log in required</strong> to unlock the scheduling magic! ⚠️  
+            🚨 **You must log in to access the scheduling feature!** 🚨  
         </p>
     </section>
 
     <footer>
-        <p>© 2025 ScheduleCreate.com. All Rights Reserved.</p>
+        <p>&copy; 2025 ScheduleCreate.com. All Rights Reserved.</p>
     </footer>
 
     <script>
         const user = JSON.parse(localStorage.getItem("user"));
 
-        // Sample user list for search demo (could be replaced with real data)
-        const users = JSON.parse(localStorage.getItem("users")) || [
-            { username: "john_doe" },
-            { username: "jane_smith" }
-        ];
-
         if (user) {
-            document.getElementById("welcomeMessage").innerText = `Hey ${user.username}, Ready to Plan?`;
+            document.getElementById("welcomeMessage").innerText = `Welcome, ${user.username}!`;
             document.getElementById("logoutBtn").style.display = "inline";
-            document.getElementById("deleteAccountBtn").style.display = "inline";
-            document.getElementById("messageBtn").style.display = "inline";
             document.getElementById("signupBtn").style.display = "none";
             document.getElementById("loginBtn").style.display = "none";
-        }-else {
-            document.getElementById("welcomeMessage").innerText = "Hey Guest! Sign up or log in to master your schedule.";
+        } else {
+            document.getElementById("welcomeMessage").innerText = "Hello, Guest! Please sign up or log in to create your schedule.";
             document.getElementById("signupBtn").style.display = "inline";
             document.getElementById("loginBtn").style.display = "inline";
             document.getElementById("logoutBtn").style.display = "none";
-            document.getElementById("deleteAccountBtn").style.display = "none";
-            document.getElementById("messageBtn").style.display = "none";
         }
 
         function logout() {
@@ -88,67 +70,10 @@
             window.location.href = "login.html";
         }
 
-        function deleteAccount() {
-            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-                const updatedUsers = users.filter(u => u.username !== user.username);
-                localStorage.setItem("users", JSON.stringify(updatedUsers));
-                localStorage.removeItem("user");
-                alert("Account deleted successfully.");
-                window.location.href = "signup.html";
-            }
-        }
-
-        function openChat() {
-            alert("Messages feature coming soon! Imagine chatting with other users here.");
-            // Placeholder for future chat functionality
-        }
-
         document.getElementById("scheduleLink").addEventListener("click", function (event) {
             if (!user) {
                 event.preventDefault();
                 document.getElementById("loginPrompt").style.display = "block";
-            }
-        });
-
-        // Search functionality
-        const pages = [
-            { name: "Home", url: "index.html" },
-            { name: "Create Schedule", url: "schedule.html" },
-            { name: "About", url: "about.html" },
-            { name: "Contact", url: "contact.html" },
-            { name: "Terms", url: "terms.html" },
-            { name: "Privacy", url: "privacy.html" },
-            { name: "Disclaimer", url: "disclaimer.html" },
-            { name: "Donate", url: "donate.html" },
-            { name: "Sign Up", url: "signup.html" },
-            { name: "Login", url: "login.html" }
-        ];
-
-        function search() {
-            const query = document.getElementById("searchInput").value.toLowerCase();
-            let results = [];
-
-            // Search pages
-            const pageResults = pages.filter(page => page.name.toLowerCase().includes(query));
-            results = results.concat(pageResults.map(page => `Page: ${page.name} (${page.url})`));
-
-            // Search users (if logged in)
-            if (user) {
-                const userResults = users.filter(u => u.username.toLowerCase().includes(query));
-                results = results.concat(userResults.map(u => `User: ${u.username}`));
-            }
-
-            if (results.length > 0) {
-                alert("Search Results:\n" + results.join("\n"));
-            } else {
-                alert("No results found.");
-            }
-        }
-
-        // Trigger search on Enter key
-        document.getElementById("searchInput").addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-                search();
             }
         });
     </script>
