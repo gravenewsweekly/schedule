@@ -28,9 +28,8 @@
     </section>
 
     <script>
-        const apiKey = "$2a$10$ZNo5JVKUh6E5ICm.ezmotO8u4CVZc707uFxrkAamgPPMGDBHhXAWq";
-        const binId = "67e1bb208960c979a577a15f"; 
-
+        const apiKey = "$2a$10$YGM1I4mvwPrsPywGd7mK.eYNP2JOZa/Yj2uQX0q6U6ONsrLaUcq06";
+        const binId = "67e2b3918960c979a5780ae8"; 
         const reservedUsernames = ["elonmusk", "jeffbezos", "narendramodi", "billgates", "barackobama"];
 
         async function fetchUsers() {
@@ -47,28 +46,26 @@
             }
         }
 
-        function validateUsername(username) {
+        function validateInput(input) {
             const forbiddenWords = ["fuck", "shit", "bitch", "asshole", "slut"];
-            const specialCharRegex = /[^a-zA-Z0-9]/;
-            if (forbiddenWords.some(word => username.toLowerCase().includes(word))) return "Inappropriate words not allowed.";
-            if (reservedUsernames.includes(username.toLowerCase())) return "This username is reserved.";
-            if (specialCharRegex.test(username)) return "No special characters allowed in username.";
-            if (/\S+@\S+\.\S+/.test(username)) return "Username cannot be an email.";
-            if (username.length < 3) return "Username must be at least 3 characters long.";
+            const sqlInjectionPatterns = /(\bSELECT\b|\bINSERT\b|\bDELETE\b|\bUPDATE\b|\bDROP\b|\bUNION\b|\b--\b|;|['"])/i;
+            if (forbiddenWords.some(word => input.toLowerCase().includes(word))) return "Inappropriate words not allowed.";
+            if (sqlInjectionPatterns.test(input)) return "Invalid characters detected.";
             return null;
+        }
+
+        function validateUsername(username) {
+            if (reservedUsernames.includes(username.toLowerCase())) return "This username is reserved.";
+            if (username.length < 3) return "Username must be at least 3 characters long.";
+            if (/\S+@\S+\.\S+/.test(username)) return "Username cannot be an email.";
+            if (/[^a-zA-Z0-9]/.test(username)) return "No special characters allowed in username.";
+            return validateInput(username);
         }
 
         function validatePassword(password) {
             if (password.length !== 6) return "Password must be exactly 6 characters long.";
             if (/[^a-zA-Z0-9]/.test(password)) return "No special characters allowed in password.";
-            return null;
-        }
-
-        async function hashPassword(password) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(password);
-            const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+            return validateInput(password);
         }
 
         async function handleSignup(event) {
@@ -96,8 +93,7 @@
                 return;
             }
 
-            const hashedPassword = await hashPassword(password);
-            const newUser = { username, email, password: hashedPassword, schedules: [] };
+            const newUser = { username, email, password, schedules: [] };
             users.push(newUser);
 
             try {
