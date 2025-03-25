@@ -19,7 +19,7 @@
                 <p class="error-message" id="emailError"></p>
             </div>
             <div class="input-group">
-                <input type="password" id="password" placeholder="Password (Min 8 chars)" required>
+                <input type="password" id="password" placeholder="Password (6 characters only)" required>
                 <p class="error-message" id="passwordError"></p>
             </div>
             <button type="submit">Sign Up</button>
@@ -30,6 +30,8 @@
     <script>
         const apiKey = "$2a$10$ZNo5JVKUh6E5ICm.ezmotO8u4CVZc707uFxrkAamgPPMGDBHhXAWq";
         const binId = "67e1bb208960c979a577a15f"; 
+
+        const reservedUsernames = ["elonmusk", "jeffbezos", "narendramodi", "billgates", "barackobama"];
 
         async function fetchUsers() {
             try {
@@ -49,6 +51,7 @@
             const forbiddenWords = ["fuck", "shit", "bitch", "asshole", "slut"];
             const specialCharRegex = /[^a-zA-Z0-9]/;
             if (forbiddenWords.some(word => username.toLowerCase().includes(word))) return "Inappropriate words not allowed.";
+            if (reservedUsernames.includes(username.toLowerCase())) return "This username is reserved.";
             if (specialCharRegex.test(username)) return "No special characters allowed in username.";
             if (/\S+@\S+\.\S+/.test(username)) return "Username cannot be an email.";
             if (username.length < 3) return "Username must be at least 3 characters long.";
@@ -56,17 +59,8 @@
         }
 
         function validatePassword(password) {
-            const lengthRequirement = password.length >= 8;
-            const uppercaseRequirement = /[A-Z]/.test(password);
-            const lowercaseRequirement = /[a-z]/.test(password);
-            const numberRequirement = /\d/.test(password);
-            const specialCharRequirement = /[\W_]/.test(password);
-            
-            if (!lengthRequirement) return "Password must be at least 8 characters.";
-            if (!uppercaseRequirement) return "Password must contain at least one uppercase letter.";
-            if (!lowercaseRequirement) return "Password must contain at least one lowercase letter.";
-            if (!numberRequirement) return "Password must contain at least one number.";
-            if (!specialCharRequirement) return "Password must contain at least one special character.";
+            if (password.length !== 6) return "Password must be exactly 6 characters long.";
+            if (/[^a-zA-Z0-9]/.test(password)) return "No special characters allowed in password.";
             return null;
         }
 
