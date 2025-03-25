@@ -23,8 +23,12 @@
         if (user) {
             document.getElementById("donationSection").innerHTML = `
                 <p>Welcome, ${user.username}! Your support keeps us going.</p>
-                <button id="donateButton" onclick="startPayment()">Donate ₹100</button>
-                <p>Available Payment Methods: Razorpay, Google Pay, FamPay</p>
+                <button id="donateButton" onclick="startPayment()">Donate ₹100 via Razorpay</button>
+                <p>Or pay via UPI:</p>
+                <ul>
+                    <li><a href="upi://pay?pa=handedaksh@okhdfcbank&pn=ScheduleCreate&am=100&cu=INR" target="_blank">Google Pay (UPI)</a></li>
+                    <li><a href="upi://pay?pa=dakshhande@fam&pn=ScheduleCreate&am=100&cu=INR" target="_blank">FamPay (UPI)</a></li>
+                </ul>
                 <p id="statusMessage"></p>
             `;
 
@@ -52,7 +56,7 @@
             }
 
             var options = {
-                "key": "YOUR_RAZORPAY_KEY_HERE",
+                "key": "handedaksh@okhdfcbank",
                 "amount": 10000, 
                 "currency": "INR",
                 "name": "ScheduleCreate.com",
