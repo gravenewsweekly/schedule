@@ -17,12 +17,14 @@
         <a href="disclaimer.html">Disclaimer</a>
         <a href="donate.html">Donate</a>
 
-        <div id="userDropdown" class="dropdown">
-            <button id="userBtn" class="dropbtn">Account</button>
-            <div class="dropdown-content" id="accountOptions">
-                <a href="login.html" onclick="logout()">🚪 Logout</a>
+        <div id="userDropdown" class="dropdown" style="display: none;">
+            <button id="userBtn" class="dropbtn"></button>
+            <div class="dropdown-content">
+                <a href="#" onclick="changeUsername()">✏️ Change Username</a>
                 <a href="#" onclick="changePassword()">🔑 Change Password</a>
-                <p id="passwordWarning" style="color: red; display: none;">⚠️ Password change is allowed only once!</p>
+                <a href="login.html" onclick="logout()">🚪 Logout</a>
+                <p id="usernameWarning" class="warning">⚠️ Username change is allowed only once!</p>
+                <p id="passwordWarning" class="warning">⚠️ Password change is allowed only once!</p>
             </div>
         </div>
 
@@ -32,27 +34,14 @@
 
     <header>
         <h1>Welcome to ScheduleCreate.com</h1>
-        <p>ScheduleCreate.com – Your Ultimate Personalized Scheduling Companion
-
-Stay ahead of your day with ScheduleCreate.com, the all-in-one task management and productivity powerhouse designed to help you organize, prioritize, and maximize efficiency like never before.
-
-✅ Seamless Task Organization – Plan, track, and manage tasks effortlessly.
-✅ Boosted Productivity – Eliminate distractions and focus on what truly matters.
-✅ Smart Time Management – Optimize your schedule for peak efficiency.
-✅ Customizable Workflows – Tailor your scheduling experience to fit your unique needs.
-
-Start taking control of your time today!
-
-📅 Create Your Schedule Now
-
- is your **personalized scheduling tool** designed to help you **organize tasks**, **boost productivity**, and **manage time efficiently**.</p>
+        <p>Your ultimate tool for managing schedules efficiently. Stay productive with easy task organization, customizable workflows, and smart time management.</p>
     </header>
 
     <main>
         <h2 id="welcomeMessage"></h2>
 
         <section id="loginPrompt" style="display: none;">
-            <p style="color: red;">🚨 **You must log in to access the scheduling feature!** 🚨</p>
+            <p class="alert">🚨 **You must log in to access the scheduling feature!** 🚨</p>
         </section>
     </main>
 
@@ -66,6 +55,7 @@ Start taking control of your time today!
         const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
         
         let user = JSON.parse(localStorage.getItem("user"));
+        let usernameChanged = localStorage.getItem("usernameChanged") === "true";
         let passwordChanged = localStorage.getItem("passwordChanged") === "true";
 
         function updateUI() {
@@ -73,14 +63,13 @@ Start taking control of your time today!
                 document.getElementById("welcomeMessage").innerText = `Welcome, ${user.username}!`;
                 document.getElementById("signupBtn").style.display = "none";
                 document.getElementById("loginBtn").style.display = "none";
-                document.getElementById("userBtn").innerText = user.username;
                 document.getElementById("userDropdown").style.display = "inline-block";
+                document.getElementById("userBtn").innerText = user.username;
 
-                if (passwordChanged) {
-                    document.getElementById("passwordWarning").style.display = "block";
-                }
+                if (usernameChanged) document.getElementById("usernameWarning").style.display = "block";
+                if (passwordChanged) document.getElementById("passwordWarning").style.display = "block";
             } else {
-                document.getElementById("welcomeMessage").innerText = "Hello, Guest! Please sign up or log in to create your schedule.";
+                document.getElementById("welcomeMessage").innerText = "Hello, Guest! Please sign up or log in.";
                 document.getElementById("signupBtn").style.display = "inline";
                 document.getElementById("loginBtn").style.display = "inline";
                 document.getElementById("userDropdown").style.display = "none";
@@ -90,7 +79,27 @@ Start taking control of your time today!
         function logout() {
             localStorage.removeItem("user");
             window.location.href = "login.html";
-        
+        }
+
+        async function changeUsername() {
+            if (usernameChanged) {
+                alert("Username change is allowed only once.");
+                return;
+            }
+
+            let newUsername = prompt("Enter your new username:");
+            if (newUsername && newUsername.trim() !== "") {
+                user.username = newUsername;
+                localStorage.setItem("user", JSON.stringify(user));
+                localStorage.setItem("usernameChanged", "true");
+
+                document.getElementById("userBtn").innerText = newUsername;
+                document.getElementById("usernameWarning").style.display = "block";
+
+                alert("Your username has been changed successfully!");
+                updateUI();
+            }
+        }
 
         async function changePassword() {
             if (passwordChanged) {
