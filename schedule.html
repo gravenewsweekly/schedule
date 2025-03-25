@@ -8,14 +8,16 @@
 </head>
 <body>
 
+    <!-- Authentication Message -->
     <div class="message" id="authMessage">
         <p>You need to create an account to access this page.</p>
         <a href="signup.html" class="btn">Create Account</a> 
         <a href="login.html" class="btn">Login</a>
     </div>
 
+    <!-- Main Content -->
     <div class="container" id="mainContent">
-        <h2>Schedule Manager</h2>
+        <h2 id="welcomeMessage">Schedule Manager</h2>
         <form id="scheduleForm">
             <input type="text" id="subject" placeholder="Enter Subject" required>
             <input type="time" id="time" required>
@@ -42,12 +44,18 @@
 
             const authMessage = document.getElementById("authMessage");
             const mainContent = document.getElementById("mainContent");
+            const welcomeMessage = document.getElementById("welcomeMessage");
 
-            // Check authentication and deny access if no user found
+            // If user is not logged in, blur the page and show message
             if (!user) {
                 document.body.classList.add("locked");
                 authMessage.classList.add("show");
                 return;
+            } else {
+                // Show welcome message with username
+                welcomeMessage.innerHTML = `Welcome, ${user.username}!`;
+                document.body.classList.remove("locked");
+                authMessage.classList.remove("show");
             }
 
             // Fetch schedules from JSONBin
