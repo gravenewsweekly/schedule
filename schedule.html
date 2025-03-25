@@ -3,148 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule</title>
+    <title>Schedule Manager</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        body.locked {
-            filter: blur(5px);
-            pointer-events: none;
-            user-select: none;
-        }
-        .message {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .message.show {
-            display: block;
-        }
-    </style>
 </head>
 <body>
+
     <div class="message" id="authMessage">
         <p>You need to create an account to access this page.</p>
-        <a href="signup.html" style="color: yellow;">Create Account</a> | 
-        <a href="login.html" style="color: lightblue;">Login</a>
+        <a href="signup.html" class="btn">Create Account</a> 
+        <a href="login.html" class="btn">Login</a>
     </div>
 
-    <h2>Add Schedule</h2>
-    <form id="scheduleForm">
-        <input type="text" id="subject" placeholder="Subject" required>
-        <input type="time" id="time" required>
-        <button type="submit">Save</button>
-    </form>
+    <div class="container">
+        <h2>Schedule Manager</h2>
+        <form id="scheduleForm">
+            <input type="text" id="subject" placeholder="Enter Subject" required>
+            <input type="time" id="time" required>
+            <button type="submit">Add Schedule</button>
+        </form>
 
-    <table id="scheduleTable">
-        <tr>
-            <th>Subject</th>
-            <th>Time</th>
-        </tr>
-    </table>
+        <table id="scheduleTable">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <script>
-        const user = JSON.parse(localStorage.getItem("user"));
+        document.addEventListener("DOMContentLoaded", () => {
+            const user = JSON.parse(localStorage.getItem("user"));
 
-        // Check if user is logged in
-        if (!user) {
-            document.body.classList.add("locked"); 
-            document.getElementById("authMessage").classList.add("show");
-        } else {
-            document.body.classList.remove("locked");
-        }
-
-        // Function to fetch user IP
-        async function getUserIP() {
-            try {
-                const response = await fetch("https://api64.ipify.org?format=json");
-                const data = await response.json();
-                localStorage.setItem("userIP", data.ip);
-            } catch (error) {
-                console.error("Error fetching IP:", error);
+            // Check authentication
+            if (!user) {
+                document.body.classList.add("locked"); 
+                document.getElementById("authMessage").classList.add("show");
+                return;
             }
-        }
 
-        getUserIP();
+            // Fetch and display saved schedules
+            function loadSchedules() {
+                const scheduleTable = document.querySelector("#scheduleTable tbody");
+                scheduleTable.innerHTML = "";
 
-        // Function to send browser notifications
-        function sendNotification(title, message) {
-            if (Notification.permission === "granted") {
-                new Notification(title, { body: message });
-            } else if (Notification.permission !== "denied") {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        new Notification(title, { body: message });
-                    }
+                user.schedules = user.schedules || [];
+                user.schedules.forEach((schedule, index) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td contenteditable="true" data-index="${index}" data-field="subject">${schedule.subject}</td>
+                        <td contenteditable="true" data-index="${index}" data-field="time">${schedule.time}</td>
+                        <td>
+                            <button class="delete-btn" data-index="${index}">Delete</button>
+                        </td>
+                    `;
+                    scheduleTable.appendChild(row);
                 });
-            }
-        }
 
-        // Notify user to create a schedule if none exists
-        if (user && (!user.schedules || user.schedules.length === 0)) {
-            setTimeout(() => {
-                sendNotification("Create Your Schedule", "Balance your study and preparation. Create a schedule now!");
-            }, 5000);
-        }
-
-        document.getElementById("scheduleForm").addEventListener("submit", async function(event) {
-            event.preventDefault();
-            
-            const subject = document.getElementById("subject").value;
-            const time = document.getElementById("time").value;
-
-            if (!user.schedules) {
-                user.schedules = [];
+                addTableEventListeners();
             }
 
-            user.schedules.push({ subject, time });
-            localStorage.setItem("user", JSON.stringify(user));
+            // Save new schedule
+            document.getElementById("scheduleForm").addEventListener("submit", (event) => {
+                event.preventDefault();
 
-            const apiKey = "$2a$10$ZNo5JVKUh6E5ICm.ezmotO8u4CVZc707uFxrkAamgPPMGDBHhXAWq";
-            const binId = "67e1bb208960c979a577a15f";
+                const subject = document.getElementById("subject").value.trim();
+                const time = document.getElementById("time").value;
 
-            await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Master-Key": apiKey
-                },
-                body: JSON.stringify(user)
+                if (!subject || !time) {
+                    alert("Please enter a valid subject and time.");
+                    return;
+                }
+
+                user.schedules.push({ subject, time });
+                localStorage.setItem("user", JSON.stringify(user));
+
+                sendNotification("Schedule Added", "Your schedule has been saved.");
+                loadSchedules();
+                document.getElementById("scheduleForm").reset();
             });
 
-            sendNotification("Schedule Created", "Your schedule has been saved successfully.");
-            location.reload();
+            // Edit or Delete Schedule Entry
+            function addTableEventListeners() {
+                document.querySelectorAll("td[contenteditable='true']").forEach(td => {
+                    td.addEventListener("input", function () {
+                        const index = this.dataset.index;
+                        const field = this.dataset.field;
+                        user.schedules[index][field] = this.innerText.trim();
+                        localStorage.setItem("user", JSON.stringify(user));
+                    });
+                });
+
+                document.querySelectorAll(".delete-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const index = this.dataset.index;
+                        user.schedules.splice(index, 1);
+                        localStorage.setItem("user", JSON.stringify(user));
+                        loadSchedules();
+                        sendNotification("Schedule Deleted", "Schedule entry removed.");
+                    });
+                });
+            }
+
+            // Notifications
+            function sendNotification(title, message) {
+                if (Notification.permission === "granted") {
+                    new Notification(title, { body: message });
+                } else {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            new Notification(title, { body: message });
+                        }
+                    });
+                }
+            }
+
+            // Load initial data
+            loadSchedules();
         });
-
-        if (user && user.schedules) {
-            user.schedules.forEach(schedule => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${schedule.subject}</td><td>${schedule.time}</td>`;
-                document.getElementById("scheduleTable").appendChild(row);
-            });
-
-            // Set reminders for upcoming schedules
-            function checkReminders() {
-                const now = new Date();
-                user.schedules.forEach(schedule => {
-                    const scheduleTime = new Date();
-                    const [hours, minutes] = schedule.time.split(":").map(Number);
-                    scheduleTime.setHours(hours, minutes, 0, 0);
-
-                    if (Math.abs(scheduleTime - now) <= 60000) { // Notify 1 minute before
-                        sendNotification("Schedule Reminder", `Time for ${schedule.subject} at ${schedule.time}`);
-                    }
-                });
-            }
-
-            setInterval(checkReminders, 60000);
-        }
     </script>
+
 </body>
 </html>
