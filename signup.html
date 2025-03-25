@@ -3,38 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>Sign Up | ScheduleCreate</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>Sign Up</h2>
-    <form id="signupForm">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Password (Min 6 characters)" required>
-        <button type="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="login.html">Login</a></p>
+    <section class="signup-container">
+        <h2>Sign Up</h2>
+        <form id="signupForm">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Username" required>
+                <p class="error-message" id="usernameError"></p>
+            </div>
+            <div class="input-group">
+                <input type="email" id="email" placeholder="Email" required>
+                <p class="error-message" id="emailError"></p>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Password (Min 8 chars)" required>
+                <p class="error-message" id="passwordError"></p>
+            </div>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="login.html">Login</a></p>
+    </section>
 
     <script>
         const apiKey = "$2a$10$ZNo5JVKUh6E5ICm.ezmotO8u4CVZc707uFxrkAamgPPMGDBHhXAWq";
-        const binId = "67e1bb208960c979a577a15f"; // Your JSONBin ID
+        const binId = "67e1bb208960c979a577a15f"; 
 
         async function fetchUsers() {
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                headers: { "X-Master-Key": apiKey }
-            });
-            return response.ok ? (await response.json()).record.users || [] : [];
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                    headers: { "X-Master-Key": apiKey }
+                });
+                if (!response.ok) throw new Error("Failed to fetch users.");
+                const data = await response.json();
+                return data.record.users || [];
+            } catch (error) {
+                console.error(error);
+                return [];
+            }
         }
 
         function validateUsername(username) {
-            const forbiddenWords = ["fuck", "shit", "bitch", "asshole", "slut"]; // Add more if needed
-            const specialCharRegex = /[^a-zA-Z0-9]/; // Allows only letters and numbers
-            
-            if (forbiddenWords.some(word => username.toLowerCase().includes(word))) return "Username contains inappropriate words.";
-            if (specialCharRegex.test(username)) return "Username must not contain special characters.";
+            const forbiddenWords = ["fuck", "shit", "bitch", "asshole", "slut"];
+            const specialCharRegex = /[^a-zA-Z0-9]/;
+            if (forbiddenWords.some(word => username.toLowerCase().includes(word))) return "Inappropriate words not allowed.";
+            if (specialCharRegex.test(username)) return "No special characters allowed in username.";
             if (/\S+@\S+\.\S+/.test(username)) return "Username cannot be an email.";
+            if (username.length < 3) return "Username must be at least 3 characters long.";
             return null;
+        }
+
+        function validatePassword(password) {
+            const lengthRequirement = password.length >= 8;
+            const uppercaseRequirement = /[A-Z]/.test(password);
+            const lowercaseRequirement = /[a-z]/.test(password);
+            const numberRequirement = /\d/.test(password);
+            const specialCharRequirement = /[\W_]/.test(password);
+            
+            if (!lengthRequirement) return "Password must be at least 8 characters.";
+            if (!uppercaseRequirement) return "Password must contain at least one uppercase letter.";
+            if (!lowercaseRequirement) return "Password must contain at least one lowercase letter.";
+            if (!numberRequirement) return "Password must contain at least one number.";
+            if (!specialCharRequirement) return "Password must contain at least one special character.";
+            return null;
+        }
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
         }
 
         async function handleSignup(event) {
@@ -44,29 +84,43 @@
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
 
-            if (password.length < 6) return alert("Password must be at least 6 characters long.");
-            
             const usernameError = validateUsername(username);
-            if (usernameError) return alert(usernameError);
+            const passwordError = validatePassword(password);
+
+            document.getElementById("usernameError").textContent = usernameError || "";
+            document.getElementById("passwordError").textContent = passwordError || "";
+
+            if (usernameError || passwordError) return;
 
             const users = await fetchUsers();
-            if (users.some(user => user.username === username)) return alert("Username is already taken.");
-            if (users.some(user => user.email === email)) return alert("Email is already in use.");
+            if (users.some(user => user.username.toLowerCase() === username.toLowerCase())) {
+                document.getElementById("usernameError").textContent = "Username is already taken.";
+                return;
+            }
+            if (users.some(user => user.email.toLowerCase() === email.toLowerCase())) {
+                document.getElementById("emailError").textContent = "Email is already registered.";
+                return;
+            }
 
-            const newUser = { username, email, password, schedules: [] };
+            const hashedPassword = await hashPassword(password);
+            const newUser = { username, email, password: hashedPassword, schedules: [] };
             users.push(newUser);
 
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json", "X-Master-Key": apiKey },
-                body: JSON.stringify({ users })
-            });
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", "X-Master-Key": apiKey },
+                    body: JSON.stringify({ users })
+                });
 
-            if (response.ok) {
-                localStorage.setItem("user", JSON.stringify(newUser));
-                window.location.href = "index.html";
-            } else {
-                alert("Error signing up!");
+                if (response.ok) {
+                    localStorage.setItem("user", JSON.stringify({ username, email }));
+                    window.location.href = "index.html";
+                } else {
+                    document.getElementById("emailError").textContent = "Error saving user data.";
+                }
+            } catch (error) {
+                document.getElementById("emailError").textContent = "Network error. Try again.";
             }
         }
 
