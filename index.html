@@ -16,7 +16,7 @@
         <a href="privacy.html">Privacy</a>
         <a href="disclaimer.html">Disclaimer</a>
         <a href="donate.html">Donate</a>
-        <button id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
+        <button id="logoutBtn" style="display: none;">Logout</button>
         <a href="signup.html" id="signupBtn" class="btn">Sign Up</a>
         <a href="login.html" id="loginBtn" class="btn">Login</a>
     </nav>
@@ -25,22 +25,16 @@
 
     <section>
         <h1>Welcome to ScheduleCreate.com</h1>
-        <p>
-            **ScheduleCreate.com** is your **personalized scheduling tool** designed to help you **organize your daily tasks, subjects, and time slots with ease**.
-        </p>
-        <p>
-            Whether you're a **student, professional, or someone managing a busy lifestyle**, our platform provides a **simple and effective way** to keep track of your schedule.
-        </p>
+        <p>**ScheduleCreate.com** is your **personalized scheduling tool** to organize your tasks efficiently.</p>
 
-        <h3>How It Works</h3>
-        <ul>
-            <li>📌 **Sign up for a free account** to start using the platform.</li>
-            <li>📝 **Create and manage schedules** by adding subjects and time slots.</li>
-            <li>📅 **View your schedule in a structured table** for easy access.</li>
-            <li>🔒 **Your data remains secure** with encrypted storage.</li>
-        </ul>
+        <h3>Account Options</h3>
+        <div id="accountOptions" style="display: none;">
+            <button onclick="logout()">🚪 Logout</button>
+            <button onclick="deleteAccount()">🗑️ Delete Account</button>
+            <button onclick="changePassword()">🔑 Change Password</button>
+            <p id="passwordWarning" style="color: red; display: none;">⚠️ Password change is allowed only once!</p>
+        </div>
 
-        <h3>Start Creating Your Schedule!</h3>
         <p id="loginPrompt" style="display: none; color: red;">
             🚨 **You must log in to access the scheduling feature!** 🚨  
         </p>
@@ -51,13 +45,23 @@
     </footer>
 
     <script>
-        const user = JSON.parse(localStorage.getItem("user"));
+        const API_KEY = "$2a$10$YGM1I4mvwPrsPywGd7mK.eYNP2JOZa/Yj2uQX0q6U6ONsrLaUcq06";
+        const BIN_ID = "67e2b3918960c979a5780ae8";
+        const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        
+        let user = JSON.parse(localStorage.getItem("user"));
+        let passwordChanged = localStorage.getItem("passwordChanged") === "true";
 
         if (user) {
             document.getElementById("welcomeMessage").innerText = `Welcome, ${user.username}!`;
             document.getElementById("logoutBtn").style.display = "inline";
             document.getElementById("signupBtn").style.display = "none";
             document.getElementById("loginBtn").style.display = "none";
+            document.getElementById("accountOptions").style.display = "block";
+
+            if (passwordChanged) {
+                document.getElementById("passwordWarning").style.display = "block";
+            }
         } else {
             document.getElementById("welcomeMessage").innerText = "Hello, Guest! Please sign up or log in to create your schedule.";
             document.getElementById("signupBtn").style.display = "inline";
@@ -68,6 +72,58 @@
         function logout() {
             localStorage.removeItem("user");
             window.location.href = "login.html";
+        }
+
+        async function deleteAccount() {
+            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+                try {
+                    const response = await fetch(JSONBIN_URL, {
+                        method: "DELETE",
+                        headers: { "X-Master-Key": API_KEY }
+                    });
+
+                    if (response.ok) {
+                        localStorage.removeItem("user");
+                        alert("Your account has been deleted.");
+                        window.location.href = "signup.html";
+                    } else {
+                        alert("Failed to delete account.");
+                    }
+                } catch (error) {
+                    alert("Error deleting account: " + error);
+                }
+            }
+        }
+
+        async function changePassword() {
+            if (passwordChanged) {
+                alert("Password change is allowed only once.");
+                return;
+            }
+
+            let newPassword = prompt("Enter your new password:");
+            if (newPassword) {
+                try {
+                    const response = await fetch(JSONBIN_URL, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Master-Key": API_KEY
+                        },
+                        body: JSON.stringify({ password: newPassword })
+                    });
+
+                    if (response.ok) {
+                        alert("Your password has been changed successfully!");
+                        localStorage.setItem("passwordChanged", "true");
+                        document.getElementById("passwordWarning").style.display = "block";
+                    } else {
+                        alert("Failed to change password.");
+                    }
+                } catch (error) {
+                    alert("Error changing password: " + error);
+                }
+            }
         }
 
         document.getElementById("scheduleLink").addEventListener("click", function (event) {
