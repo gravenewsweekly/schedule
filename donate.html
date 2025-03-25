@@ -5,51 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Donate to Support</title>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h2>Support ScheduleCreate.com</h2>
-    <p>Your donations help us keep the platform running smoothly!</p>
-
+    <p>Your donations help us maintain and improve the platform! Every contribution makes a difference.</p>
+    
     <div id="donationSection">
-        <button id="donateButton" onclick="startPayment()">Donate ₹100</button>
+        <p><strong>Login required to donate.</strong></p>
+        <p><a href='login.html'>Log in</a> to proceed.</p>
     </div>
 
     <script>
         const user = JSON.parse(localStorage.getItem("user"));
-        if (!user) {
-            document.getElementById("donationSection").innerHTML = "<p>Please <a href='login.html'>log in</a> to donate.</p>";
-        } else {
-            function startPayment() {
-                var options = {
-                    "key": "YOUR_RAZORPAY_KEY_HERE",
-                    "amount": 10000, // Amount in paisa (₹100)
-                    "currency": "INR",
-                    "name": "ScheduleCreate.com",
-                    "description": "Support Our Platform",
-                    "image": "logo.png", // Change to your logo
-                    "handler": function (response) {
-                        localStorage.setItem("donationStatus", JSON.stringify({ paid: true, username: user.username }));
-                        window.location.href = "donate.html"; // Redirect after successful payment
-                    },
-                    "prefill": {
-                        "name": user.username,
-                        "email": user.email
-                    },
-                    "theme": {
-                        "color": "#3399cc"
-                    }
-                };
 
-                var rzp = new Razorpay(options);
-                rzp.open();
+        if (user) {
+            document.getElementById("donationSection").innerHTML = `
+                <p>Welcome, ${user.username}! Your support keeps us going.</p>
+                <button id="donateButton" onclick="startPayment()">Donate ₹100</button>
+                <p>Available Payment Methods: Razorpay, Google Pay, FamPay</p>
+                <p id="statusMessage"></p>
+            `;
+
+            checkDonationStatus();
+        }
+
+        async function fetchIP() {
+            try {
+                let res = await fetch("https://api64.ipify.org?format=json");
+                let data = await res.json();
+                return data.ip;
+            } catch (error) {
+                console.error("Error fetching IP:", error);
+                return null;
+            }
+        }
+
+        async function startPayment() {
+            let userIP = await fetchIP();
+            let storedData = JSON.parse(localStorage.getItem("donationHistory")) || {};
+            
+            if (storedData[userIP]) {
+                document.getElementById("statusMessage").innerHTML = `<span class="error">You have already donated.</span>`;
+                return;
             }
 
-            // Check donation status
-            const donationData = JSON.parse(localStorage.getItem("donationStatus"));
-            if (donationData && donationData.paid) {
-                document.getElementById("donationSection").innerHTML = `<button disabled>Paid by ${donationData.username}</button>`;
-            }
+            var options = {
+                "key": "YOUR_RAZORPAY_KEY_HERE",
+                "amount": 10000, 
+                "currency": "INR",
+                "name": "ScheduleCreate.com",
+                "description": "Support our platform with a donation",
+                "image": "logo.png",
+                "handler": function (response) {
+                    localStorage.setItem("donationHistory", JSON.stringify({ ...storedData, [userIP]: user.username }));
+                    document.getElementById("donationSection").innerHTML = `
+                        <p>Payment Successful! Thank you, ${user.username}.</p>
+                        <button disabled>Donation Received ✅</button>
+                    `;
+                },
+                "prefill": {
+                    "name": user.username,
+                    "email": user.email
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+
+            var rzp = new Razorpay(options);
+            rzp.open();
+        }
+
+        function checkDonationStatus() {
+            fetchIP().then(userIP => {
+                let storedData = JSON.parse(localStorage.getItem("donationHistory")) || {};
+                if (storedData[userIP]) {
+                    document.getElementById("donationSection").innerHTML = `
+                        <p>Thank you, ${storedData[userIP]}! Your donation is greatly appreciated.</p>
+                        <button disabled>Donation Received ✅</button>
+                    `;
+                }
+            });
         }
     </script>
 </body>
