@@ -14,15 +14,15 @@
 
     <section class="login-container">
         <h2>Log In to ScheduleCreate.com</h2>
-        <p>Welcome back! Enter your credentials to access your personalized schedules.</p>
+        <p>Welcome back! Enter your credentials to access your schedules.</p>
 
         <form id="loginForm">
             <div class="input-group">
-                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="text" id="loginUsername" placeholder="Username" required>
             </div>
             <div class="input-group">
                 <input type="password" id="loginPassword" placeholder="Password" required>
-                <span id="togglePassword" onclick="togglePasswordVisibility()">👁️</span>
+                <span id="togglePassword">👁️</span>
             </div>
             <button type="submit">Log In</button>
             <div class="loader" id="loadingSpinner"></div>
@@ -43,18 +43,16 @@
             const errorMessage = document.getElementById("errorMessage");
             const loadingSpinner = document.getElementById("loadingSpinner");
 
-            // Check if user is already logged in
             if (localStorage.getItem("user")) {
                 window.location.href = "index.html";
             }
 
             loginForm.addEventListener("submit", async (event) => {
                 event.preventDefault();
-
-                const email = document.getElementById("loginEmail").value.trim();
+                const username = document.getElementById("loginUsername").value.trim();
                 const password = document.getElementById("loginPassword").value;
 
-                if (!email || !password) {
+                if (!username || !password) {
                     showError("Please fill in all fields.");
                     return;
                 }
@@ -66,22 +64,20 @@
 
                 try {
                     const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                        method: "GET",
                         headers: { "X-Master-Key": apiKey }
                     });
 
                     if (!response.ok) throw new Error("Failed to fetch user data. Try again later.");
-
                     const data = await response.json();
-                    const users = Array.isArray(data.record) ? data.record : [data.record];
+                    const users = data.record.users || [];
 
-                    const user = users.find(u => u.email === email && u.password === password);
+                    const user = users.find(u => u.username === username && u.password === password);
 
                     if (user) {
                         localStorage.setItem("user", JSON.stringify(user));
                         window.location.href = "index.html";
                     } else {
-                        showError("Invalid email or password. Please try again.");
+                        showError("Invalid username or password. Please try again.");
                     }
                 } catch (error) {
                     showError(error.message || "An error occurred. Please try again.");
