@@ -1,10 +1,10 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScheduleCreate.com | Login</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav>
@@ -27,7 +27,7 @@
             <button type="submit">Log In</button>
         </form>
 
-        <p id="errorMessage" style="color: red; display: none;"></p>
+        <p id="errorMessage" class="error-message"></p>
         <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
         <p>Forgot password? <a href="#" id="forgotPassword">Reset here</a></p>
     </section>
@@ -50,7 +50,6 @@
             const password = document.getElementById("loginPassword").value;
             const errorMessage = document.getElementById("errorMessage");
 
-            // Basic client-side validation
             if (!email || !password) {
                 errorMessage.innerText = "Please fill in all fields.";
                 errorMessage.style.display = "block";
@@ -71,7 +70,7 @@
                 }
 
                 const data = await response.json();
-                const users = Array.isArray(data.record) ? data.record : [data.record]; // Handle single user or array
+                const users = Array.isArray(data.record) ? data.record : [data.record];
 
                 const user = users.find(u => u.email === email && u.password === password);
 
@@ -88,7 +87,6 @@
             }
         });
 
-        // Toggle password visibility
         function togglePasswordVisibility() {
             const passwordField = document.getElementById("loginPassword");
             const toggleIcon = document.getElementById("togglePassword");
@@ -101,11 +99,11 @@
             }
         }
 
-        // Placeholder for forgot password (future feature)
         document.getElementById("forgotPassword").addEventListener("click", function(event) {
             event.preventDefault();
             alert("Password reset feature coming soon! Contact support@schedulecreate.com for now.");
         });
     </script>
+
 </body>
 </html>
